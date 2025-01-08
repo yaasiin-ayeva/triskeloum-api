@@ -10,10 +10,10 @@ export class Course extends BaseModel {
     @Column({ type: "varchar", length: 255, nullable: false, unique: true })
     title: string;
 
-    @ManyToOne(() => Level, (level) => level.courses)
+    @ManyToOne(() => Level, (level) => level.courses, { eager: true })
     level: Level;
 
-    @ManyToOne(() => Category, (category) => category.courses)
+    @ManyToOne(() => Category, (category) => category.courses, { eager: true })
     category: Category;
 
     @Column({ type: "varchar", nullable: true, unique: false })

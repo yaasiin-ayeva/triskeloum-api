@@ -9,12 +9,12 @@ import CacheConfig from "../config/cache.config";
 export class BaseController<S extends BaseService<any>> {
 
     protected readonly service: S;
-    private readonly cache: any;
+    private readonly _cache: any;
     protected readonly cachePrefix: string;
 
     constructor(service: S, cachePrefix: string) {
         this.service = service;
-        this.cache = new NodeCache(CacheConfig);
+        this._cache = new NodeCache(CacheConfig);
         this.cachePrefix = cachePrefix;
     }
 
@@ -66,18 +66,18 @@ export class BaseController<S extends BaseService<any>> {
     }
 
     protected getFromCache(key: string) {
-        return this.cache.get(key);
+        return this._cache.get(key);
     }
 
     protected async putInCache(key: string, data: any) {
-        await this.cache.set(key, data);
+        await this._cache.set(key, data);
     }
 
     protected async deleteFromCache(key: string) {
-        await this.cache.del(key);
+        await this._cache.del(key);
     }
 
     protected async resetCache() {
-        this.cache.flushAll();
+        this._cache.flushAll();
     }
 }

@@ -37,6 +37,16 @@ export default class UserService extends BaseService<User> {
             .getOne();
     }
 
+    public async getAllUsers() {
+        const userFields = User.allowedFields.map(field => `users.${field}`);
+        const levelFields = ['level.name', 'level.rank', 'level.id'];
+        return await this.repo.createQueryBuilder("users")
+            .leftJoinAndSelect('users.level', 'level')
+            .select([...userFields, ...levelFields])
+            .getMany();
+    }
+
+
     public async signup(data: SignupDto) {
 
         try {

@@ -9,10 +9,8 @@ export default class LevelController extends BaseController<LevelService> {
 
     public getLevels = async (req, res, next) => {
         try {
-
             const data = await this.service.findAll();
             return this.apiResponse(res, 200, "Levels fetched successfully", data);
-
         } catch (e) {
             next(e);
         }

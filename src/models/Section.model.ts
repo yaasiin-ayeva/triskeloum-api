@@ -1,6 +1,5 @@
-import { Column, Entity, ManyToOne, OneToOne } from "typeorm";
+import { Column, Entity, ManyToOne } from "typeorm";
 import BaseModel from "./Base.model";
-import { SectionContent } from "./SectionContent.model";
 import { Course } from "./Course.model";
 
 @Entity("sections")
@@ -12,20 +11,18 @@ export class Section extends BaseModel {
     @ManyToOne(() => Course, (course) => course.sections)
     course: Course;
 
-    @OneToOne(() => SectionContent, (content) => content.section, {
-        cascade: true,
-        eager: true,
-    })
-    content: SectionContent;
+    @Column({ type: "int", nullable: false })
+    order: number;
 
-    @OneToOne(() => Section, (section) => section.next)
-    next: Section;
+    @Column({ type: "json", nullable: false })
+    content: {
+        cover: string,
+        summary: string,
+        parts: { title: string, content: string }[]
+    }
 
-    @OneToOne(() => Section, (section) => section.previous)
-    previous: Section;
-
-    constructor(level: Partial<Section>) {
+    constructor(section: Partial<Section>) {
         super();
-        Object.assign(this, level);
+        Object.assign(this, section);
     }
 }
