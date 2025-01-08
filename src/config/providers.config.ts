@@ -1,17 +1,10 @@
 import EnvConfig from "./environment.config";
 import { createTransport } from 'nodemailer';
 import logger from "./logger.config";
+import { IEmailMessage } from "../types/interfaces";
 
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(EnvConfig.SENDGRID_API_KEY);
-
-interface EmailMessage {
-    to: string;
-    from: string;
-    subject: string;
-    text?: string;
-    html?: string;
-}
 
 const transporter = createTransport({
     service: EnvConfig.SMTP_SERVICE,
@@ -24,7 +17,7 @@ const transporter = createTransport({
     },
 });
 
-export const sendMail = async (msg: EmailMessage, provider: 'nodemailer' | 'sendgrid' = EnvConfig.DEFAULT_EMAIL_PROVIDER) => {
+export const sendMail = async (msg: IEmailMessage, provider: 'nodemailer' | 'sendgrid' = EnvConfig.DEFAULT_EMAIL_PROVIDER) => {
     if (EnvConfig.ENABLE_EMAIL) {
         if (provider === 'sendgrid') {
             await sgMail.send(msg);

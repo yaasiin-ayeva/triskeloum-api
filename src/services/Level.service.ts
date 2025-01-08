@@ -8,9 +8,8 @@ export default class LevelService extends BaseService<Level> {
     constructor() {
         if (LevelService.instance) {
             return LevelService.instance;
-        } else {
-            super(Level);
-            LevelService.instance = this;
         }
+        super(Level);
+        LevelService.instance = this;
     }
 }
