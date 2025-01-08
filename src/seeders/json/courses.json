@@ -1,0 +1,142 @@
+{
+    "courses": [
+        {
+            "title": "Be The Best Version Of Yourself",
+            "level": 1,
+            "category": 1,
+            "legend": "This is a course that will help you become the best version of yourself",
+            "est_time_min": 60,
+            "cover": "https://picsum.photos/200",
+            "sections": [
+                {
+                    "title": "Building Self-Awareness",
+                    "order": 0,
+                    "content": {
+                        "cover": "https://picsum.photos/201",
+                        "summary": "### Building Self-Awareness\n\nLearn how to understand yourself better by exploring your strengths, weaknesses, and values.",
+                        "parts": [
+                            {
+                                "title": "Discovering Your Strengths",
+                                "content": "#### Understanding Your Strengths\n\n1. **Reflect on past successes:** Recall moments where you felt most accomplished.\n2. **Ask for feedback:** Reach out to trusted friends or colleagues for insight.\n\n_\"Knowing yourself is the beginning of all wisdom.\" - Aristotle_"
+                            },
+                            {
+                                "title": "Acknowledging Weaknesses",
+                                "content": "#### Identifying Weaknesses\n\n1. **Recognize recurring challenges:** Document areas where you often struggle.\n2. **Turn weaknesses into opportunities:** Focus on improving one area at a time.\n\n_\"Our greatest glory is not in never falling, but in rising every time we fall.\" - Confucius_"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "title": "Setting Meaningful Goals",
+                    "order": 1,
+                    "content": {
+                        "cover": "https://picsum.photos/202",
+                        "summary": "### Setting Meaningful Goals\n\nDiscover how to set and achieve goals that align with your values and dreams.",
+                        "parts": [
+                            {
+                                "title": "Crafting SMART Goals",
+                                "content": "#### SMART Goals Framework\n\n- **Specific:** Define your objective clearly.\n- **Measurable:** Identify metrics to track progress.\n- **Achievable:** Ensure the goal is realistic.\n- **Relevant:** Align the goal with your values.\n- **Time-bound:** Set a deadline.\n\nExample: _\"I will finish reading one personal development book this month.\"_"
+                            },
+                            {
+                                "title": "Maintaining Motivation",
+                                "content": "#### Staying Motivated\n\n1. **Visualize success:** Imagine the benefits of achieving your goal.\n2. **Celebrate progress:** Reward yourself for small wins.\n\n_\"The journey of a thousand miles begins with a single step.\" - Lao Tzu_"
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "title": "Mastering Productivity",
+            "level": 2,
+            "category": 2,
+            "legend": "A course designed to help you boost your productivity and manage your time effectively.",
+            "est_time_min": 75,
+            "cover": "https://picsum.photos/203",
+            "sections": [
+                {
+                    "title": "Time Management Strategies",
+                    "order": 0,
+                    "content": {
+                        "cover": "https://picsum.photos/204",
+                        "summary": "### Learn time management techniques to maximize efficiency and focus.",
+                        "parts": [
+                            {
+                                "title": "Prioritization Techniques",
+                                "content": "#### Eisenhower Matrix\n\nLearn to categorize tasks as urgent, important, or neither:\n- **Do first:** Urgent and important.\n- **Schedule:** Important but not urgent.\n- **Delegate:** Urgent but not important.\n- **Eliminate:** Neither.\n"
+                            },
+                            {
+                                "title": "The Power of Focus",
+                                "content": "#### Focus Techniques\n\n1. **Pomodoro Technique:** Work for 25 minutes, then take a 5-minute break.\n2. **Deep Work:** Block distractions for extended periods of focused work.\n"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "title": "Overcoming Procrastination",
+                    "order": 1,
+                    "content": {
+                        "cover": "https://picsum.photos/205",
+                        "summary": "### Tackle procrastination by understanding its root causes and applying effective strategies.",
+                        "parts": [
+                            {
+                                "title": "Understanding Procrastination",
+                                "content": "#### Why Do We Procrastinate?\n\n1. Fear of failure.\n2. Overwhelm from complex tasks.\n3. Lack of motivation.\n\n_\"Procrastination is the art of keeping up with yesterday.\" - Don Marquis_"
+                            },
+                            {
+                                "title": "Breaking the Habit",
+                                "content": "#### Strategies to Beat Procrastination\n\n1. **Break tasks into smaller steps.**\n2. **Use rewards as motivation.**\n3. **Set realistic deadlines.**\n"
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "title": "Introduction to Psychology",
+            "level": 1,
+            "category": 3,
+            "legend": "An engaging introduction to the fundamental concepts of psychology.",
+            "est_time_min": 90,
+            "cover": "https://picsum.photos/206",
+            "sections": [
+                {
+                    "title": "Understanding Human Behavior",
+                    "order": 0,
+                    "content": {
+                        "cover": "https://picsum.photos/207",
+                        "summary": "### Explore the key factors influencing human behavior, from biology to environment.",
+                        "parts": [
+                            {
+                                "title": "The Role of Biology",
+                                "content": "#### Biological Influences\n\n1. The brain's impact on emotions and behavior.\n2. The role of neurotransmitters in mood regulation.\n"
+                            },
+                            {
+                                "title": "Environmental Factors",
+                                "content": "#### How Environment Shapes Us\n\n1. Influence of culture and upbringing.\n2. Impact of social interactions on personality.\n"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "title": "Theories of Personality",
+                    "order": 1,
+                    "content": {
+                        "cover": "https://picsum.photos/208",
+                        "summary": "### Learn about major personality theories and their applications.",
+                        "parts": [
+                            {
+                                "title": "Freud's Psychoanalytic Theory",
+                                "content": "#### Sigmund Freud\n\nExplore Freud's concepts of the id, ego, and superego, and their influence on personality."
+                            },
+                            {
+                                "title": "Modern Personality Models",
+                                "content": "#### The Big Five Personality Traits\n\n- Openness.\n- Conscientiousness.\n- Extraversion.\n- Agreeableness.\n- Neuroticism.\n"
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    ]
+}

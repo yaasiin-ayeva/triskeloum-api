@@ -109,20 +109,22 @@ export class User extends BaseModel {
         return !!user;
     }
 
+    static allowedFields = [
+        'id',
+        'picture',
+        'firstname',
+        'lastname',
+        'email',
+        'role',
+        'level',
+        'last_login',
+        'created_at',
+        'updated_at',
+        'is_pwd_updated'
+    ];
+
     get whitelist(): string[] {
-        return [
-            'id',
-            'picture',
-            'firstname',
-            'lastname',
-            'email',
-            'role',
-            'level',
-            'last_login',
-            'created_at',
-            'updated_at',
-            'is_pwd_updated'
-        ]
+        return User.allowedFields;
     }
 
     public getInfo() {

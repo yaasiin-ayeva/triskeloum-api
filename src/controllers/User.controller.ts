@@ -8,11 +8,33 @@ import EnvConfig from "../config/environment.config";
 import logger from "../config/logger.config";
 import { SignupDto } from "../dtos/auth.dto";
 import { emailEmitter } from "../types/events/email.event";
+import LevelService from "../services/Level.service";
 
 export default class UserController extends BaseController<UserService> {
 
+    private readonly _levelService: LevelService;
+
     constructor() {
         super(new UserService(), 'user');
+        this._levelService = new LevelService();
+    }
+
+    public getLevelsHandler = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const data = await this._levelService.findAll();
+            return this.apiResponse(res, 200, "Levels fetched successfully", data);
+        } catch (e) {
+            next(e);
+        }
+    }
+
+    public getUsersHandler = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const data = await this.service.getAllUsers();
+            return this.apiResponse(res, 200, "Users fetched successfully", data);
+        } catch (e) {
+            next(e);
+        }
     }
 
     public loginHandler = async (req: Request, res: Response, next: NextFunction) => {
