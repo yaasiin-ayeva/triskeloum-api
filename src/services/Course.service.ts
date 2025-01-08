@@ -8,10 +8,9 @@ export default class CourseService extends BaseService<Course> {
     constructor() {
         if (CourseService.instance) {
             return CourseService.instance;
-        } else {
-            super(Course);
-            CourseService.instance = this;
         }
+        super(Course);
+        CourseService.instance = this;
     }
 
     public async findByCategory(categoryId: number) {

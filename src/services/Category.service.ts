@@ -8,10 +8,8 @@ export default class CategoryService extends BaseService<Category> {
     constructor() {
         if (CategoryService.instance) {
             return CategoryService.instance;
-        } else {
-            super(Category);
-            CategoryService.instance = this;
         }
+        super(Category);
+        CategoryService.instance = this;
     }
-
 }
