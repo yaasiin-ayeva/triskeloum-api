@@ -1,0 +1,100 @@
+name: Staging CI/CD
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  SSH_KEY: ${{ secrets.SSH_KEY }}
+  SERVER_IP: ${{ secrets.SERVER_IP }}
+  SERVER_USERNAME: ${{ secrets.SERVER_USERNAME }}
+  APP_STAGING_ENV: ${{ secrets.APP_STAGING_ENV }}
+  APP_PATH: ${{ secrets.APP_PATH }}
+  APP_NAME: ${{ secrets.APP_NAME }}
+  BRANCH: ${{ secrets.BRANCH }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+
+      - run: npm ci 
+      - run: npm run build --if-present
+
+      - name: Create artifact
+        run: |
+          cp package.json build/
+          cp package-lock.json build/
+          echo "${{ env.APP_STAGING_ENV }}" > build/.env
+          cd build && tar -czf ../build.tar.gz .
+          cd .. && rm -rf build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build-artifact
+          path: build.tar.gz
+
+  deploy:
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: build-artifact
+          path: .
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ env.SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ env.SERVER_IP }} >> ~/.ssh/known_hosts
+
+      - name: Deploy
+        run: |
+          scp -i ~/.ssh/id_rsa build.tar.gz ${{ env.SERVER_USERNAME }}@${{ env.SERVER_IP }}:${{ env.APP_PATH }}/
+          ssh -i ~/.ssh/id_rsa ${{ env.SERVER_USERNAME }}@${{ env.SERVER_IP }} '
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            
+            cd ${{ env.APP_PATH }}
+            BACKUP_FILE_NAME="build.bak.$(date +%F-%T)"
+
+            rollback() {
+              [ -d "backups/$BACKUP_FILE_NAME" ] && {
+                rm -rf build package.json package-lock.json .env node_modules
+                mv "backups/$BACKUP_FILE_NAME"/* .
+                pm2 reload ${{ env.APP_NAME }} || pm2 start npm --name "${{ env.APP_NAME }}" -- start
+                return 0
+              }
+              return 1
+            }
+
+            [ -d "build" ] && mkdir -p "backups/$BACKUP_FILE_NAME" && cp -r {build,package.json,package-lock.json,.env,node_modules} "backups/$BACKUP_FILE_NAME/" 2>/dev/null || true
+            
+            rm -rf build package.json package-lock.json .env
+            tar -xzf build.tar.gz || { echo "Failed to extract build files"; rollback; exit 1; }
+            rm build.tar.gz
+
+            npm install --omit=dev || { echo "Failed to install dependencies"; rollback; exit 1; }
+            command -v pm2 &> /dev/null || npm install -g pm2
+
+            pm2 describe "${{ env.APP_NAME }}" > /dev/null && pm2 reload "${{ env.APP_NAME }}" --update-env || pm2 start npm --name "${{ env.APP_NAME }}" -- run deploy
+          '
+
+      - name: Cleanup
+        if: always()
+        run: rm -f ~/.ssh/id_rsa

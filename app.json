@@ -1,0 +1,7 @@
+{
+  "name": "Triskeloum backend",
+  "description": "Triskeloum backend is a server side element to handle apis. Runs with SQL databases, Use TypeORM, JWT authentication &amp; Custom seeders.",
+  "website": "https://yaasiin-dev.vercel.app",
+  "version": "1.0.0",
+  "author": "https://github.com/yaasiin-ayeva"
+}
