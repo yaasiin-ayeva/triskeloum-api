@@ -9,6 +9,7 @@ const authRouter = Router();
 authRouter.post('/signin', userController.loginHandler);
 authRouter.post('/signup', userController.signupHandler);
 authRouter.post('/signout', userController.signoutHandler);
+authRouter.post('/refresh-token', userController.refreshTokenHandler);
 
 authRouter.post('/forgot-password', userController.forgotPasswordHandler);
 authRouter.post('/reset-password/:token', userController.resetPasswordHandler);

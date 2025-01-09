@@ -71,6 +71,20 @@ export default class UserController extends BaseController<UserService> {
         }
     }
 
+    public refreshTokenHandler = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { refresh_token } = req.body;
+            if (!refresh_token || refresh_token.length === 0) {
+                throw new ErrorResponse('Refresh token is required', 400);
+            }
+
+            const data = await this.service.refreshToken(refresh_token);
+            return this.apiResponse(res, 200, "Token refreshed successfully", data);
+        } catch (error) {
+            next(error);
+        }
+    }
+
     public signoutHandler = async (_, res: Response, next: NextFunction) => {
         try {
 

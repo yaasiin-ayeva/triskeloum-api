@@ -48,6 +48,10 @@ export default class BaseService<T> {
         return await this.repo.findOne({ where: whereClause as unknown as FindOptionsWhere<T> });
     }
 
+    async findManyByField(value: any, fieldName: string): Promise<T[]> {
+        return await this.repo.find({ where: { [fieldName]: value } as unknown as FindOptionsWhere<T> });
+    }
+
     async addNew(data: T | DeepPartial<T>): Promise<T> {
         return await this.create(data);
     }

@@ -33,10 +33,8 @@ const EnvConfig = {
     JWT_PROD_EXPIRE: String(process.env.JWT_PROD_EXPIRE),
     JWT_REMEMBER_ME_EXPIRE: String(process.env.JWT_REMEMBER_ME_EXPIRE),
 
-    AUTH_SECRET: String(process.env.AUTH_SECRET),
-
-    ACCESS_TOKEN_DURATION: Number(process.env.ACCESS_TOKEN_DURATION),
-    ACCESS_TOKEN_SECRET: String(process.env.ACCESS_TOKEN_SECRET),
+    PWD_RESET_ACCESS_TOKEN_DURATION: Number(process.env.PWD_RESET_ACCESS_TOKEN_DURATION),
+    REFRESH_TOKEN_DURATION: Number(process.env.REFRESH_TOKEN_DURATION),
     RESET_PASSWORD_CLIENT_URL: String(process.env.RESET_PASSWORD_CLIENT_URL),
 
     DB_TYPE: String(process.env.DB_TYPE),

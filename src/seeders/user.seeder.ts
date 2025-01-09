@@ -1,12 +1,14 @@
 import EnvConfig from "../config/environment.config";
 import logger from "../config/logger.config";
 import { User } from "../models/User.model";
+import UserService from "../services/User.service";
 import { ROLE } from "../types/enums";
 
 const seedDefaultUser = async () => {
     try {
 
-        const existingUser = await User.isUserExists(EnvConfig.DEFAULT_USER_EMAIL, EnvConfig.DEFAULT_USER_PHONE);
+        const userService = new UserService();
+        const existingUser = await userService.isUserExists(EnvConfig.DEFAULT_USER_EMAIL, EnvConfig.DEFAULT_USER_PHONE);
 
         if (!existingUser) {
 
