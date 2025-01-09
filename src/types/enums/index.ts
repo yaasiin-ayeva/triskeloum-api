@@ -5,6 +5,7 @@ import { MEDIA_TYPE } from './media-type.enum';
 import { ROLE } from './role.enum';
 import { EMAIL_EVENTS, } from './events-names.enum';
 import { TEST_STATUS } from './test-status.enum';
+import { TOKEN_TYPE } from './token-type.enum';
 
 export {
   DATABASE_ENGINE,
@@ -14,4 +15,5 @@ export {
   ROLE,
   TEST_STATUS,
   EMAIL_EVENTS,
+  TOKEN_TYPE,
 }

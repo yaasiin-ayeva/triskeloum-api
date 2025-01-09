@@ -1,9 +1,9 @@
 import * as bcrypt from 'bcrypt';
 import BaseModel from "./Base.model";
-import { BeforeInsert, Column, Entity, Index, ManyToOne } from "typeorm";
-import { AppDataSource } from '../config/database.config';
+import { BeforeInsert, Column, Entity, Index, ManyToOne, OneToMany } from "typeorm";
 import { ROLE } from '../types/enums';
 import { Level } from './Level.model';
+import { Token } from './Token.model';
 
 @Entity("users")
 export class User extends BaseModel {
@@ -41,19 +41,8 @@ export class User extends BaseModel {
     })
     password: string;
 
-    @Column({
-        type: "varchar",
-        nullable: true,
-        default: null
-    })
-    reset_password_token: string;
-
-    @Column({
-        type: "timestamp",
-        nullable: true,
-        default: null
-    })
-    reset_password_expire: Date;
+    @OneToMany(() => Token, (token) => token.user)
+    tokens: Token[];
 
     @Column({
         type: "timestamp",
@@ -85,30 +74,6 @@ export class User extends BaseModel {
         return this.password;
     }
 
-    async updateLastLogin() {
-        const userRepository = AppDataSource.getRepository(User);
-        await userRepository.update({ id: this.id }, { last_login: new Date() });
-    }
-
-    async passwordMatches(plainTextPassword: string): Promise<boolean> {
-        return await bcrypt.compare(plainTextPassword, this.password);
-    }
-
-    static async isEmailTaken(email: string): Promise<boolean> {
-        const user = await AppDataSource.getRepository(User).findOne({ where: { email } });
-        return !!user;
-    }
-
-    static async isUserExists(email: string, phone: string): Promise<boolean> {
-        const user = await AppDataSource.getRepository(User).findOne({ where: { email, phone } });
-        return !!user;
-    }
-
-    static async isPhoneTaken(phone: string): Promise<boolean> {
-        const user = await AppDataSource.getRepository(User).findOne({ where: { phone } });
-        return !!user;
-    }
-
     static allowedFields = [
         'id',
         'picture',
@@ -123,16 +88,12 @@ export class User extends BaseModel {
         'is_pwd_updated'
     ];
 
-    get whitelist(): string[] {
-        return User.allowedFields;
-    }
-
     public getInfo() {
-        const whitelistedData: any = {};
-        for (const field of this.whitelist) {
-            whitelistedData[field] = this[field];
+        const allowedListData: any = {};
+        for (const field of User.allowedFields) {
+            allowedListData[field] = this[field];
         }
-        return whitelistedData;
+        return allowedListData;
     }
 
     constructor(user: Partial<User>) {

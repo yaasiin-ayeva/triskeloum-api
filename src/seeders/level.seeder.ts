@@ -8,6 +8,7 @@ const seedLevels = async () => {
     try {
 
         const levels: Level[] = [
+            new Level({ name: 'Level 0', rank: 0 }),
             new Level({ name: 'Level 1', rank: 1 }),
             new Level({ name: 'Level 2', rank: 2 }),
             new Level({ name: 'Level 3', rank: 3 }),
