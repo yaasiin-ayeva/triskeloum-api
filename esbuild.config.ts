@@ -11,6 +11,8 @@ esbuild.build({
     format: 'cjs',
     external: ['aws-sdk', 'mock-aws-s3', 'nock'],
     loader: { '.html': 'text' },
-}).catch(() => {
+    logLevel: 'error'
+}).catch((err) => {
+    console.error('Build failed:', err);
     process.exit(1);
 });

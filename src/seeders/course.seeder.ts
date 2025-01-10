@@ -2,7 +2,7 @@ import logger from "../config/logger.config";
 import { Course } from "../models/Course.model";
 import CourseService from "../services/Course.service";
 
-const json = require("./json/courses.json");
+import json from './json/courses.json';
 
 const seedCourses = async () => {
     const courseService = new CourseService();

@@ -21,8 +21,7 @@ const compression = require('compression');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
 // const socketIo = require('socket.io');
-
-const publicContent = require('../app.json');
+import publicContent from '../app.json';
 const PORT = EnvConfig.API_PORT;
 
 const app = express();
