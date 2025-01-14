@@ -60,6 +60,7 @@ export class User extends BaseModel {
     @ManyToOne(() => Level, (level) => level.users)
     level: Level
 
+    @Index()
     @Column({
         type: "varchar",
         nullable: false,

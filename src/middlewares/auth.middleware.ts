@@ -10,47 +10,68 @@ const INVALID_AUTHORIZATION_TOKEN = "Invalid authorization token";
 
 const userService: UserService = new UserService();
 
-export default async function authMiddleware(req: any, _res: Response, next: NextFunction) {
-    try {
-        let token: string | undefined;
+const createAuthMiddleware = (required: boolean = true) => {
+    return async (req: any, _res: Response, next: NextFunction) => {
+        try {
+            let token: string | undefined;
 
-        if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-            token = req.headers.authorization.split(' ')[1];
-        } else if (req.cookies.token) {
-            token = req.cookies.token;
-        }
-
-        if (!token) {
-            return next(new ErrorResponse(MISSING_AUTHORIZATION_TOKEN, 401));
-        }
-
-        jwt.verify(token, EnvConfig.JWT_KEY, async (error: any, decodedToken: any) => {
-            if (error) {
-                return next(new ErrorResponse(UNAUTHORIZED_USER, 401));
+            if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+                token = req.headers.authorization.split(' ')[1];
+            } else if (req.cookies.token) {
+                token = req.cookies.token;
             }
 
-            const tokenId = decodedToken?.id;
-
-            if (!tokenId) {
-                return next(new ErrorResponse(INVALID_AUTHORIZATION_TOKEN, 401));
+            if (!token) {
+                if (required) {
+                    return next(new ErrorResponse(MISSING_AUTHORIZATION_TOKEN, 401));
+                }
+                return next();
             }
 
-            try {
-
-                let user = await userService.findById(tokenId);
-
-                if (!user) {
-                    return next(new ErrorResponse(INVALID_AUTHORIZATION_TOKEN, 401));
+            jwt.verify(token, EnvConfig.JWT_KEY, async (error: any, decodedToken: any) => {
+                if (error) {
+                    if (required) {
+                        return next(new ErrorResponse(UNAUTHORIZED_USER, 401));
+                    }
+                    return next();
                 }
 
-                req.user = user.getInfo();
+                const tokenId = decodedToken?.id;
 
-                return next();
-            } catch (error) {
-                return next(new ErrorResponse(error.message, 500));
+                if (!tokenId) {
+                    if (required) {
+                        return next(new ErrorResponse(INVALID_AUTHORIZATION_TOKEN, 401));
+                    }
+                    return next();
+                }
+
+                try {
+                    let user = await userService.findById(tokenId);
+
+                    if (!user) {
+                        if (required) {
+                            return next(new ErrorResponse(INVALID_AUTHORIZATION_TOKEN, 401));
+                        }
+                        return next();
+                    }
+
+                    req.user = user.getInfo();
+                    return next();
+                } catch (error) {
+                    if (required) {
+                        return next(new ErrorResponse(error.message, 500));
+                    }
+                    return next();
+                }
+            });
+        } catch (error) {
+            if (required) {
+                return next(new ErrorResponse(INVALID_AUTHORIZATION_TOKEN, 401));
             }
-        });
-    } catch (error) {
-        return next(new ErrorResponse(INVALID_AUTHORIZATION_TOKEN, 401));
-    }
-}
+            return next();
+        }
+    };
+};
+
+export const authMiddleware = createAuthMiddleware(true);
+export const optionalAuthMiddleware = createAuthMiddleware(false);

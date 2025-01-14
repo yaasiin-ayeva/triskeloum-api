@@ -21,7 +21,7 @@ export default class UserController extends BaseController<UserService> {
 
     public getLevelsHandler = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const data = await this._levelService.findAll();
+            const data = await this._levelService.findAllWithCounts();
             return this.apiResponse(res, 200, "Levels fetched successfully", data);
         } catch (e) {
             next(e);
