@@ -1,6 +1,6 @@
 import { Router } from "express";
 import CourseController from "../../controllers/Course.controller";
-import authMiddleware from "../../middlewares/auth.middleware";
+import { authMiddleware, optionalAuthMiddleware } from "../../middlewares/auth.middleware";
 
 const courseController = new CourseController();
 const courseRouter = Router();
@@ -24,9 +24,11 @@ courseRouter.get(
 );
 
 courseRouter.get(
-    '/courses/:id',
-    authMiddleware,
-    courseController.getCourse
+    '/my-courses',
+    // allow access even if the user is not authenticated, 
+    // the controller will accomodate
+    optionalAuthMiddleware,
+    courseController.getMyCourses
 );
 
 courseRouter.get(

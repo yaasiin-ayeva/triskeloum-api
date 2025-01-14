@@ -1,10 +1,11 @@
-import { Column, Entity, OneToMany } from "typeorm";
+import { BeforeRecover, Column, Entity, Index, OneToMany } from "typeorm";
 import BaseModel from "./Base.model";
 import { Course } from "./Course.model";
 
 @Entity("categories")
 export class Category extends BaseModel {
 
+    @Index({ unique: true })
     @Column({ type: "varchar", length: 255, nullable: false, unique: true })
     title: string;
 
@@ -13,6 +14,8 @@ export class Category extends BaseModel {
 
     @OneToMany(() => Course, (course) => course.category)
     courses: Course[];
+
+    courses_count?: number;
 
     constructor(category: Partial<Category>) {
         super();

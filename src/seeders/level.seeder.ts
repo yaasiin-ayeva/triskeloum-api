@@ -19,6 +19,7 @@ const seedLevels = async () => {
             new Level({ name: 'Level 8', rank: 8 }),
             new Level({ name: 'Level 9', rank: 9 }),
             new Level({ name: 'Level 10', rank: 10 }),
+            new Level({ name: 'Guest level', rank: -1, is_public: true }),
         ];
 
         for (const level of levels) {

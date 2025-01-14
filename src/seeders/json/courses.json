@@ -137,6 +137,236 @@
                     }
                 }
             ]
+        },
+        {
+            "title": "Mindfulness and Meditation",
+            "level": 1,
+            "category": 4,
+            "legend": "Learn the art of mindfulness and how to meditate for a balanced life.",
+            "est_time_min": 60,
+            "cover": "https://picsum.photos/215",
+            "sections": [
+                {
+                    "title": "Introduction to Mindfulness",
+                    "order": 0,
+                    "content": {
+                        "cover": "https://picsum.photos/216",
+                        "summary": "### Understand the principles and benefits of mindfulness in daily life.",
+                        "parts": [
+                            {
+                                "title": "The Basics of Mindfulness",
+                                "content": "#### What is Mindfulness?\n\n1. Living in the present moment.\n2. Letting go of distractions.\n"
+                            },
+                            {
+                                "title": "Benefits of Mindfulness",
+                                "content": "#### Why Practice Mindfulness?\n\n1. Reduced stress and anxiety.\n2. Improved focus and emotional well-being.\n"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "title": "Meditation Techniques",
+                    "order": 1,
+                    "content": {
+                        "cover": "https://picsum.photos/217",
+                        "summary": "### Explore effective meditation practices to deepen your mindfulness.",
+                        "parts": [
+                            {
+                                "title": "Breathing Exercises",
+                                "content": "#### Focusing on Your Breath\n\n1. Techniques for calmness and clarity.\n2. Managing thoughts during meditation.\n"
+                            },
+                            {
+                                "title": "Body Scan Meditation",
+                                "content": "#### Connecting with Your Body\n\n1. A step-by-step guide to relaxation.\n2. Enhancing awareness through physical sensations.\n"
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "title": "The Power of Gratitude",
+            "level": 1,
+            "category": 4,
+            "legend": "Discover how practicing gratitude can transform your perspective on life.",
+            "est_time_min": 45,
+            "cover": "https://picsum.photos/218",
+            "sections": [
+                {
+                    "title": "Understanding Gratitude",
+                    "order": 0,
+                    "content": {
+                        "cover": "https://picsum.photos/219",
+                        "summary": "### Learn the science behind gratitude and its impact on mental health.",
+                        "parts": [
+                            {
+                                "title": "What is Gratitude?",
+                                "content": "#### Defining Gratitude\n\n1. Acknowledging the positives in life.\n2. Recognizing contributions from others.\n"
+                            },
+                            {
+                                "title": "Benefits of Gratitude",
+                                "content": "#### How Gratitude Changes Lives\n\n1. Enhances mental health and relationships.\n2. Promotes emotional resilience and happiness.\n"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "title": "Daily Gratitude Practices",
+                    "order": 1,
+                    "content": {
+                        "cover": "https://picsum.photos/220",
+                        "summary": "### Simple methods to cultivate gratitude every day.",
+                        "parts": [
+                            {
+                                "title": "Gratitude Journaling",
+                                "content": "#### Writing Your Thanks\n\n1. How to start a gratitude journal.\n2. Reflection prompts to deepen gratitude.\n"
+                            },
+                            {
+                                "title": "Expressing Gratitude",
+                                "content": "#### Sharing Positivity\n\n1. Writing thank-you notes.\n2. Saying 'thank you' in meaningful ways.\n"
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "title": "Exploring Chakras and Energy Flow",
+            "level": 13,
+            "category": 4,
+            "legend": "A journey into understanding the chakra system and its role in spiritual balance.",
+            "est_time_min": 75,
+            "cover": "https://picsum.photos/221",
+            "sections": [
+                {
+                    "title": "The Basics of Chakras",
+                    "order": 0,
+                    "content": {
+                        "cover": "https://picsum.photos/222",
+                        "summary": "### Discover the seven chakras and their significance in spiritual health.",
+                        "parts": [
+                            {
+                                "title": "What are Chakras?",
+                                "content": "#### Chakra Overview\n\n1. Understanding energy centers in the body.\n2. Connection between chakras and well-being.\n"
+                            },
+                            {
+                                "title": "Balancing Chakras",
+                                "content": "#### Techniques for Alignment\n\n1. Meditation and visualization.\n2. Using crystals and essential oils.\n"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "title": "Chakra Healing Practices",
+                    "order": 1,
+                    "content": {
+                        "cover": "https://picsum.photos/223",
+                        "summary": "### Techniques to restore harmony and balance in your chakras.",
+                        "parts": [
+                            {
+                                "title": "Yoga for Chakra Activation",
+                                "content": "#### Yoga Poses\n\n1. Asanas for each chakra.\n2. Breathwork to activate energy flow.\n"
+                            },
+                            {
+                                "title": "Sound Therapy",
+                                "content": "#### Healing Through Vibration\n\n1. Mantras and chanting.\n2. Tuning forks and singing bowls.\n"
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "title": "The Art of Letting Go",
+            "level": 2,
+            "category": 4,
+            "legend": "Learn to release attachments and embrace a life of freedom and peace.",
+            "est_time_min": 90,
+            "cover": "https://picsum.photos/224",
+            "sections": [
+                {
+                    "title": "Understanding Attachment",
+                    "order": 0,
+                    "content": {
+                        "cover": "https://picsum.photos/225",
+                        "summary": "### Explore how attachments create emotional and mental barriers.",
+                        "parts": [
+                            {
+                                "title": "What is Attachment?",
+                                "content": "#### Grasping the Concept\n\n1. Differentiating healthy and unhealthy attachments.\n2. Identifying personal attachments.\n"
+                            },
+                            {
+                                "title": "The Impact of Letting Go",
+                                "content": "#### Emotional Freedom\n\n1. How detachment reduces suffering.\n2. Developing a non-clinging mindset.\n"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "title": "Techniques for Letting Go",
+                    "order": 1,
+                    "content": {
+                        "cover": "https://picsum.photos/226",
+                        "summary": "### Practical steps to free yourself from unhealthy attachments.",
+                        "parts": [
+                            {
+                                "title": "Acceptance and Forgiveness",
+                                "content": "#### Steps to Heal\n\n1. Embracing what you cannot change.\n2. Forgiving yourself and others.\n"
+                            },
+                            {
+                                "title": "Mindful Detachment",
+                                "content": "#### Living in Peace\n\n1. Focusing on the present moment.\n2. Cultivating gratitude and simplicity.\n"
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "title": "Connecting with Your Higher Self",
+            "level": 13,
+            "category": 4,
+            "legend": "Learn to tune into your inner wisdom and uncover your spiritual purpose.",
+            "est_time_min": 120,
+            "cover": "https://picsum.photos/227",
+            "sections": [
+                {
+                    "title": "Discovering Your Higher Self",
+                    "order": 0,
+                    "content": {
+                        "cover": "https://picsum.photos/228",
+                        "summary": "### Understand the concept of the Higher Self and its role in spiritual growth.",
+                        "parts": [
+                            {
+                                "title": "What is the Higher Self?",
+                                "content": "#### Exploring Spiritual Identity\n\n1. The source of intuition and guidance.\n2. Connection to the universal consciousness.\n"
+                            },
+                            {
+                                "title": "Recognizing Your Inner Voice",
+                                "content": "#### Developing Awareness\n\n1. Signs of higher self-communication.\n2. Distinguishing ego from intuition.\n"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "title": "Practices to Strengthen the Connection",
+                    "order": 1,
+                    "content": {
+                        "cover": "https://picsum.photos/229",
+                        "summary": "### Techniques to deepen your spiritual awareness.",
+                        "parts": [
+                            {
+                                "title": "Journaling and Reflection",
+                                "content": "#### Gaining Clarity\n\n1. Writing prompts for self-discovery.\n2. Reflecting on life's purpose.\n"
+                            },
+                            {
+                                "title": "Guided Visualizations",
+                                "content": "#### Journeying Within\n\n1. Visualizing your ideal self.\n2. Receiving insights through meditation.\n"
+                            }
+                        ]
+                    }
+                }
+            ]
         }
     ]
 }
