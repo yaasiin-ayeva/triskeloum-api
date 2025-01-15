@@ -1,6 +1,6 @@
 import { Router } from "express";
 import QuoteController from "../../controllers/Quote.controller";
-import { authMiddleware } from "../../middlewares/auth.middleware";
+import { authMiddleware, optionalAuthMiddleware } from "../../middlewares/auth.middleware";
 
 const quoteController = new QuoteController();
 const quoteRouter = Router();
@@ -8,6 +8,7 @@ const quoteRouter = Router();
 quoteRouter.get(
     '/quotes/random',
     // authMiddleware,
+    optionalAuthMiddleware,
     quoteController.getRandomQuoteHandler
 );
 

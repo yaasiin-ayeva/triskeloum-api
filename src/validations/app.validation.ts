@@ -1,82 +1,73 @@
 import * as Joi from 'joi';
-import { id, proper_noun } from '../types/schemas';
 
-export const createTestSchema = {
+export const updateAppInfoSchema = {
     body: Joi.object({
-        topicId: id().required().label('Topic Id'),
-        title: Joi.string().max(255).required().label('Test Title'),
+        name: Joi.string().allow(null, '').optional().label('App Name'),
         description: Joi.string().allow(null, '').optional().label('Description'),
-        duration_minutes: Joi.number().integer().min(1).optional().label('Duration (minutes)'),
+        contact_phone: Joi.string().allow(null, '').optional().label('Contact Phone'),
+        contact_email: Joi.string().email().allow(null, '').optional().label('Contact Email'),
+        logo: Joi.string().uri().allow(null, '').optional().label('Logo'),
+        favicon: Joi.string().uri().allow(null, '').optional().label('Favicon'),
+        url: Joi.string().uri().allow(null, '').optional().label('URL'),
     })
 };
 
-export const createTopicSchema = {
+export const updateAppLocationSchema = {
     body: Joi.object({
-        title: Joi.string().max(255).required().label('Topic Title'),
-        description: Joi.string().allow(null, '').optional().label('Description'),
-        picture: Joi.binary().allow(null, '').optional().label('Picture'),
+        country: Joi.string().allow(null, '').optional().label('Country'),
+        city: Joi.string().allow(null, '').optional().label('City'),
+        address: Joi.string().allow(null, '').optional().label('Address'),
+        timezone: Joi.string().allow(null, '').optional().label('Timezone'),
     })
 };
 
-export const updateTestSchema = {
+export const updateAppEmailConfigSchema = {
     body: Joi.object({
-        title: Joi.string().max(255).optional().label('Test Title'),
-        description: Joi.string().allow(null, '').optional().label('Description'),
-        duration_minutes: Joi.number().integer().min(1).optional().label('Duration (minutes)'),
+        driver: Joi.string().allow(null, '').optional().label('Driver'),
+        protocol: Joi.string().allow(null, '').optional().label('Protocol'),
+        host: Joi.string().allow(null, '').optional().label('Host'),
+        port: Joi.number().integer().allow(null).optional().label('Port'),
+        username: Joi.string().allow(null, '').optional().label('Username'),
+        password: Joi.string().allow(null, '').optional().label('Password'),
+        from: Joi.string().email().allow(null, '').optional().label('From Email'),
+        encryption: Joi.string().allow(null, '').optional().label('Encryption'),
     })
 };
 
-export const createOptionSchema = {
-    body: Joi.object({
-        text: Joi.string().max(255).required().label('Option Text'),
-        isCorrect: Joi.boolean().default(false).optional().label('Is Correct'),
-    })
-}
 
-export const createQuestionSchema = {
+export const updateMobileAppLinksSchema = {
     body: Joi.object({
-        text: Joi.string().max(255).required().label('Question'),
-        // type: Joi.string().valid('single_choice', 'multiple_choice').required().default('single_choice').label('Type'),
-        options: Joi.array().items(createOptionSchema.body).min(2).required().label('Options'),
-    }),
+        play_store: Joi.string().uri().allow(null, '').optional().label('Play Store Link'),
+        android_package_name: Joi.string().allow(null, '').optional().label('Android Package Name'),
+        apple_store: Joi.string().uri().allow(null, '').optional().label('Apple Store Link'),
+        apple_id: Joi.string().allow(null, '').optional().label('Apple ID'),
+    })
 };
 
-export const userAnswersSchema = {
+export const updateAppCurrencySchema = {
     body: Joi.object({
-        questionId: id().required().label('Question Id'),
-        selectedOptionIds: Joi.array().items(id()).min(0).required().label('Selected Option Ids'),
+        code: Joi.string().allow(null, '').optional().label('Currency Code'),
+        symbol: Joi.string().allow(null, '').optional().label('Currency Symbol'),
+        name: Joi.string().allow(null, '').optional().label('Currency Name'),
     })
-}
+};
 
-export const submitTestSchema = {
+export const updateAppStatusSchema = {
     body: Joi.object({
-        autoSubmit: Joi.boolean().optional().label('Auto Submit'),
-        testSessionId: id().required().label('Test Session Id'),
-        answers: Joi.array().items(userAnswersSchema.body).min(0).required().label('Answers'),
+        is_app_maintenance_mode: Joi.boolean().required().label('App Maintenance Mode'),
+        app_maintenance_message: Joi.string().allow(null, '').optional().label('App Maintenance Message'),
     })
-}
+};
 
-export const setAppConfigSchema = {
+export const updateSocialMediaLinksSchema = {
     body: Joi.object({
-        send_test_result_by_email: Joi.boolean().required().label('Send Test Result By Email'),
-        email_domain_restriction: Joi.array().items(Joi.string()).min(0).required().label('Email Domain Restriction'),
-        wrong_answers_penalty: Joi.number().integer().min(0).required().label('Wrong Answers Penalty'),
+        facebook: Joi.string().uri().allow(null, '').optional().label('Facebook Link'),
+        twitter: Joi.string().uri().allow(null, '').optional().label('Twitter Link'),
+        instagram: Joi.string().uri().allow(null, '').optional().label('Instagram Link'),
+        youtube: Joi.string().uri().allow(null, '').optional().label('YouTube Link'),
+        linkedin: Joi.string().uri().allow(null, '').optional().label('LinkedIn Link'),
+        google_plus: Joi.string().uri().allow(null, '').optional().label('Google Plus Link'),
+        whatsapp: Joi.string().uri().allow(null, '').optional().label('WhatsApp Link'),
+        telegram: Joi.string().uri().allow(null, '').optional().label('Telegram Link'),
     })
-}
-
-export const updateTopicSchema = {
-    body: Joi.object({
-        title: Joi.string().max(255).optional().label('Topic Title'),
-        description: Joi.string().allow(null, '').optional().label('Description'),
-        hide: Joi.boolean().optional().label('Hide'),
-    })
-}
-
-export const bulkTestQuestionnairesStoreSchema = {
-    body: Joi.object({
-        topicId: id().required().label('Topic Id'),
-        description: Joi.string().allow(null, '').optional().label('Test Description'),
-        title: Joi.string().max(255).required().label('Test Title'),
-        duration_minutes: Joi.number().integer().min(1).optional().label('Duration (minutes)'),
-    })
-}
+};
