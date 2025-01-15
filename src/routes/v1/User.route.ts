@@ -12,6 +12,12 @@ userRouter.get(
 );
 
 userRouter.get(
+    '/users/search',
+    authMiddleware,
+    userController.searchUsersHandler
+);
+
+userRouter.get(
     '/levels',
     userController.getLevelsHandler
 )

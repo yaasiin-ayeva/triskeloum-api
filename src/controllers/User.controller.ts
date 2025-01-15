@@ -37,6 +37,15 @@ export default class UserController extends BaseController<UserService> {
         }
     }
 
+    public searchUsersHandler = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const data = await this.service.searchUsers(req.query.query as string);
+            return this.apiResponse(res, 200, "Users fetched successfully", data);
+        } catch (e) {
+            next(e);
+        }
+    }
+
     public loginHandler = async (req: Request, res: Response, next: NextFunction) => {
         try {
 

@@ -28,6 +28,24 @@ export default class UserService extends BaseService<User> {
         UserService.tokenService = TokenService.getInstance();
     }
 
+    public async searchUsers(query: string) {
+        if (!query || query.length > 100) {
+            return [];
+        }
+
+        const sanitizedQuery = query.replace(/[^a-zA-Z0-9@. ]/g, '');
+
+        const searchFields = ['email', 'phone', 'firstname', 'lastname']
+            .filter(field => User.allowedFields.includes(field))
+            .map(field => `users.${field}`);
+
+        return await this.repo.createQueryBuilder("users")
+            .select(User.allowedFields.map(field => `users.${field}`))
+            .where(searchFields.map(field => `${field} ILIKE :query`).join(' OR '),
+                { query: `%${sanitizedQuery}%` })
+            .getMany();
+    }
+
     public async findById(id: number) {
         return await this.repo
             .createQueryBuilder('users')
