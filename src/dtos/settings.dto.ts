@@ -55,3 +55,13 @@ export class AppInfoDto {
     favicon: string | null;
     url: string | null;
 }
+
+export class AppSettingDto {
+    appInfo: AppInfoDto;
+    appStatus: AppStatusDto;
+    appLocation: AppLocationDto;
+    appCurrency: AppCurrencyDto;
+    appEmailConfig: AppEmailConfigDto;
+    socialMediaLinks: SocialMediaLinksDto;
+    mobileAppLinks: MoblileAppLinksDto;
+}

@@ -17,7 +17,15 @@ export default class CourseController extends BaseController<CourseService> {
 
     public getCategories = async (req, res, next) => {
         try {
-            const data = await this._categoryService.findAllWithCourseCounts();
+
+            const page = parseInt(req.query.page as string) || 1;
+            const limit = parseInt(req.query.limit as string) || 10;
+
+            if (page < 1 || limit < 1 || limit > 100) {
+                return this.apiResponse(res, 400, "Invalid pagination parameters", null);
+            }
+
+            const data = await this._categoryService.findAllWithCourseCounts({ page, limit });
             return this.apiResponse(res, 200, "Categories fetched successfully", data);
         } catch (e) {
             next(e);

@@ -1,10 +1,10 @@
-import { AppCurrencyDto, AppEmailConfigDto, AppInfoDto, AppLocationDto, AppStatusDto, MoblileAppLinksDto, SocialMediaLinksDto } from "../dtos/settings.dto";
+import { AppCurrencyDto, AppEmailConfigDto, AppInfoDto, AppLocationDto, AppSettingDto, AppStatusDto, MoblileAppLinksDto, SocialMediaLinksDto } from "../dtos/settings.dto";
 import { AppSetting } from "../models/AppSetting.model";
 import BaseService from "./Base.service";
 
 export default class AppSettingsService extends BaseService<AppSetting> {
 
-    private static instance: AppSettingsService;
+    static instance: AppSettingsService;
 
     constructor() {
         if (AppSettingsService.instance) {
@@ -72,7 +72,7 @@ export default class AppSettingsService extends BaseService<AppSetting> {
         return this.getAppSettings();
     }
 
-    async getAppSettings(): Promise<any> {
+    async getAppSettings(): Promise<AppSettingDto> {
         const appSettings = await this.getDefault();
         return {
             appInfo: appSettings.getAppInfo,
@@ -83,5 +83,10 @@ export default class AppSettingsService extends BaseService<AppSetting> {
             socialMediaLinks: appSettings.getSocialMediaLinks,
             mobileAppLinks: appSettings.getMobileAppLinks
         }
+    }
+
+    static async getSettings(): Promise<any> {
+        const settings = new AppSettingsService();
+        return await settings.getAppSettings();
     }
 }

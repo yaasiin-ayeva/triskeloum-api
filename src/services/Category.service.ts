@@ -13,13 +13,33 @@ export default class CategoryService extends BaseService<Category> {
         CategoryService.instance = this;
     }
 
-    async findAllWithCourseCounts(): Promise<Category[]> {
-        const data = await this.repo.createQueryBuilder("categories")
-            .leftJoin("categories.courses", "courses")
-            .loadRelationCountAndMap("categories.courses_count", "categories.courses")
-            .getMany();
+    async findAllWithCourseCounts({ page: page = 1, limit: limit = 10 }): Promise<{ pagination: any, data: Category[] }> {
 
-        return data;
+        const offset = (page - 1) * limit;
+
+        const queryBuilder = this.repo.createQueryBuilder("categories")
+            .leftJoin("categories.courses", "courses")
+            .loadRelationCountAndMap("categories.courses_count", "categories.courses");
+
+        const [data, total] = await Promise.all([
+            queryBuilder
+                .take(limit)
+                .skip(offset)
+                .getMany(),
+            queryBuilder.getCount()
+        ]);
+
+        return {
+            pagination: {
+                currentPage: page,
+                itemsPerPage: limit,
+                totalItems: total,
+                totalPages: Math.ceil(total / limit),
+                hasNextPage: page < Math.ceil(total / limit),
+                hasPreviousPage: page > 1
+            },
+            data
+        };
     }
 
     async findByIdWithCounts(id: number): Promise<Category> {
