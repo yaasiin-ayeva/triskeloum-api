@@ -20,7 +20,10 @@ export class Email extends BaseModel {
     subject: string;
 
     @Column({ type: "text", nullable: false })
-    body: string;
+    html: string;
+
+    @Column({ type: "text", nullable: false })
+    text: string;
 
     @Index()
     @Column({ type: "boolean", default: false })
