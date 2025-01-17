@@ -63,4 +63,11 @@ appRouter.get(
     appController.getAppSettingsHandler
 );
 
+appRouter.post(
+    '/send-email',
+    authMiddleware,
+    restrictTo([ROLE.admin]),
+    appController.createEmailHandler
+);
+
 export default appRouter;

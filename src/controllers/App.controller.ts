@@ -1,16 +1,20 @@
 import { NextFunction, Request, Response } from "express";
 import { BaseController } from "./Base.controller";
 import AppSettingsService from "../services/AppSettings.service";
-import { updateAppCurrencySchema, updateAppEmailConfigSchema, updateAppInfoSchema, updateAppLocationSchema, updateAppStatusSchema, updateMobileAppLinksSchema, updateSocialMediaLinksSchema } from "../validations/app.validation";
-import { AppCurrencyDto, AppEmailConfigDto, AppInfoDto, AppLocationDto, AppStatusDto, MoblileAppLinksDto, SocialMediaLinksDto } from "../dtos/settings.dto";
+import { createEmailSchema, updateAppCurrencySchema, updateAppEmailConfigSchema, updateAppInfoSchema, updateAppLocationSchema, updateAppStatusSchema, updateMobileAppLinksSchema, updateSocialMediaLinksSchema } from "../validations/app.validation";
+import { AppCurrencyDto, AppEmailConfigDto, AppInfoDto, AppLocationDto, AppStatusDto, EmailDto, MoblileAppLinksDto, SocialMediaLinksDto } from "../dtos/settings.dto";
+import EmailService from "../services/Email.service";
 
 export default class AppController extends BaseController<AppSettingsService> {
 
+    private readonly _emailService: EmailService;
+
     constructor() {
         super(new AppSettingsService(), 'app_settings');
+        this._emailService = new EmailService();
     }
 
-    public getAppSettingsHandler = async (req: Request, res: Response, next: NextFunction) => {
+    public getAppSettingsHandler = async (_req: Request, res: Response, next: NextFunction) => {
         try {
             const data = await this.service.getAppSettings();
             return this.apiResponse(res, 200, "App settings fetched successfully", data);
@@ -98,6 +102,18 @@ export default class AppController extends BaseController<AppSettingsService> {
             Object.assign(payload, req.body);
             const data = await this.service.updateAppInfo(payload);
             return this.apiResponse(res, 200, "App settings updated successfully", data);
+        } catch (e) {
+            next(e);
+        }
+    }
+
+    public createEmailHandler = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            this.validateRequestArgs(req, createEmailSchema);
+            const payload = new EmailDto();
+            Object.assign(payload, req.body);
+            const data = await this._emailService.createAndSendEmail(payload);
+            return this.apiResponse(res, 200, "Email created successfully", data);
         } catch (e) {
             next(e);
         }

@@ -65,3 +65,11 @@ export class AppSettingDto {
     socialMediaLinks: SocialMediaLinksDto;
     mobileAppLinks: MoblileAppLinksDto;
 }
+
+export class EmailDto {
+    sender: string;
+    receiver: string;
+    subject: string;
+    html: string;
+    text: string;
+}
