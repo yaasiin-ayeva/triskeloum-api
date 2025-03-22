@@ -16,6 +16,9 @@ export class Course extends BaseModel {
     @ManyToOne(() => Category, (category) => category.courses, { eager: true })
     category: Category;
 
+    @Column({ type: "boolean", nullable: false, default: false })
+    published: boolean;
+
     @Column({ type: "varchar", nullable: true, unique: false })
     cover: string;
 

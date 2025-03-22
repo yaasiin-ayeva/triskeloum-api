@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import rateLimit from "express-rate-limit";
 import swaggerUi = require('swagger-ui-express');
-// import SocketHandler from "./core/sockets/socket-handler.sockets";
 import { AppDataSource } from "./config/database.config";
 import EnvConfig from "./config/environment.config";
 import logger from "./config/logger.config";
@@ -20,15 +19,13 @@ import { verifySmtpConnection } from "./config/providers.config";
 const compression = require('compression');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
-// const socketIo = require('socket.io');
 import publicContent from '../app.json';
+import SocketHandler from "./sockets/socket-handler.sockets";
+import PeerServerService from "./services/PeerServer.service";
 const PORT = EnvConfig.API_PORT;
 
 const app = express();
 const server = http.createServer(app);
-// const io: SocketServer = socketIo(server, {
-//     cors: corsOptions
-// });
 
 const apiLimiter = rateLimit({
     windowMs: EnvConfig.WINDOWS_MS,
@@ -63,9 +60,9 @@ app.get('/', (_, res) => {
     res.send(publicContent);
 });
 
-// app.set('trust proxy', true);
-// app.set('socketio', io);
-// new SocketHandler(io);
+new SocketHandler(server);
+// const peerService = new PeerServerService(server);
+// app.use('/peerjs', peerService.getPeerServer());
 
 app.use((error: any, req: Request, res: Response, _next: any) => {
     let statusCode = error.statusCode || 500;

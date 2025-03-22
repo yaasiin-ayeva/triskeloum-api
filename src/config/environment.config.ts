@@ -82,6 +82,8 @@ const EnvConfig = {
     SMTP_SECURE: Number(process.env.SMTP_SECURE) === 1 ? true : false,
     SMTP_USER: String(process.env.SMTP_USER),
     SMTP_PASS: String(process.env.SMTP_PASS),
+
+    REDIS_URL: String(process.env.REDIS_URL),
 }
 
 export default EnvConfig;

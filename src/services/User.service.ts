@@ -8,8 +8,8 @@ import BaseService from "./Base.service";
 import { awaiter } from "../utils/core.util";
 import EnvConfig from '../config/environment.config';
 import LevelService from './Level.service';
-import { Token } from '../models/Token.model';
-import TokenService from './Token.service';
+import { Session } from '../models/Session.model';
+import SessionService from './Session.service';
 
 const crypto = require('crypto');
 import ms from "ms";
@@ -17,7 +17,7 @@ import ms from "ms";
 export default class UserService extends BaseService<User> {
 
     private static instance: UserService;
-    private static tokenService: TokenService;
+    private static sessionService: SessionService;
 
     constructor() {
         if (UserService.instance) {
@@ -25,7 +25,7 @@ export default class UserService extends BaseService<User> {
         }
         super(User);
         UserService.instance = this;
-        UserService.tokenService = TokenService.getInstance();
+        UserService.sessionService = SessionService.getInstance();
     }
 
     public async searchUsers(query: string) {
@@ -139,7 +139,7 @@ export default class UserService extends BaseService<User> {
         return await this.repo.update(user.id, { last_login: new Date() });
     }
 
-    private async generateAccessToken(user: User, keepAlive: boolean = false): Promise<Token> {
+    private async generateAccessToken(user: User, keepAlive: boolean = false): Promise<Session> {
         const whitelist: string[] = User.allowedFields;
         const token_data: { [key: string]: any } = {};
 
@@ -162,7 +162,7 @@ export default class UserService extends BaseService<User> {
 
         const expires_at = new Date(Date.now() + ms(expiresIn));
 
-        return await UserService.tokenService.createToken({
+        return await UserService.sessionService.createSession({
             token: tokenString,
             type: TOKEN_TYPE.access,
             expires_at: expires_at,
@@ -176,7 +176,7 @@ export default class UserService extends BaseService<User> {
 
         const tokenString: string = TOKEN_TYPE.refresh.toLowerCase() + '-' + crypto.randomBytes(24).toString('hex');
 
-        return await UserService.tokenService.createToken({
+        return await UserService.sessionService.createSession({
             token: tokenString,
             type: TOKEN_TYPE.refresh,
             expires_at: expiresAt,
@@ -185,8 +185,7 @@ export default class UserService extends BaseService<User> {
     }
 
     public async signout() {
-        // No need to do anything, stateless server, client side implementation
-        // TODO but can update last login of the user or last seen for future improvements
+        // TODO : invalidate current session 
         return true;
     }
 
@@ -203,7 +202,7 @@ export default class UserService extends BaseService<User> {
         const tokenString = crypto.randomBytes(20).toString('hex');
         const expires_at = new Date(Date.now() + EnvConfig.PWD_RESET_ACCESS_TOKEN_DURATION);
 
-        const resetToken: Token = await UserService.tokenService.createToken({
+        const resetToken: Session = await UserService.sessionService.createSession({
             token: tokenString,
             type: TOKEN_TYPE.reset_password,
             expires_at: expires_at,
@@ -214,19 +213,19 @@ export default class UserService extends BaseService<User> {
 
     public async refreshToken(refreshToken: string) {
 
-        const token = await UserService.tokenService.getToken(refreshToken, TOKEN_TYPE.refresh, false, true, true);
+        const session = await UserService.sessionService.getSession(refreshToken, TOKEN_TYPE.refresh, false, true, true);
 
-        if (!token) {
+        if (!session) {
             throw new ErrorResponse('Invalid refresh token', 401);
         }
 
-        if (new Date() > token.expires_at) {
-            token.is_valid = false;
-            await UserService.tokenService.update(token.id, token);
+        if (new Date() > session.expires_at) {
+            session.is_valid = false;
+            await UserService.sessionService.update(session.id, session);
             throw new ErrorResponse('Refresh token expired', 401);
         }
 
-        const accessToken = await this.generateAccessToken(token.user);
+        const accessToken = await this.generateAccessToken(session.user);
         return {
             token: accessToken.token,
             refreshToken: refreshToken
@@ -289,7 +288,7 @@ export default class UserService extends BaseService<User> {
 
     public async resetPassword(tokenString: string, newPassword: string) {
 
-        const resetToken = await UserService.tokenService.getToken(tokenString, TOKEN_TYPE.reset_password, false, true, true);
+        const resetToken = await UserService.sessionService.getSession(tokenString, TOKEN_TYPE.reset_password, false, true, true);
 
         if (!resetToken) {
             throw new ErrorResponse('Access token is invalid or has expired', 400);
@@ -299,7 +298,7 @@ export default class UserService extends BaseService<User> {
         const user = resetToken.user;
         user.password = await bcrypt.hash(newPassword, saltRounds);
         const update = await this.repo.update(user.id, user);
-        await UserService.tokenService.invalidateToken(resetToken);
+        await UserService.sessionService.invalidateSession(resetToken);
 
         if (!update || !update.affected || update.affected < 1) {
             throw new ErrorResponse('Password reset failed', 400);

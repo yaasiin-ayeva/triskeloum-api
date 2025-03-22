@@ -71,5 +71,4 @@ export class EmailDto {
     receiver: string;
     subject: string;
     html: string;
-    text: string;
 }

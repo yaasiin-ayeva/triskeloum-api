@@ -1,226 +1,98 @@
-// import { Server as SocketServer, Socket } from 'socket.io';
-// import ChatRoomService from '../services/communication/chat-room.service';
-// import MessageService from '../services/communication/message.service';
-// import { SOCKETS_EVENTS as e } from '../types/enums';
-// import logger from '../../config/logger.config';
-// import { IMessageAttachment } from '../types/interfaces';
-// import { UserService } from '../services/hr/user.hr.service';
+import { Server, Socket } from "socket.io";
+import { createAdapter } from "@socket.io/redis-adapter";
+import { createClient } from "redis";
+import http from "http";
+import jwt from "jsonwebtoken";
+import { User } from "../models/User.model";
+import SocketEventsHandler from "./events/socket-events.handler";
+import logger from "../config/logger.config";
+import EnvConfig from "../config/environment.config";
 
-// export default class SocketHandler {
+export let socket: Server;
 
-//     private io: SocketServer;
-//     private chatRoomService: ChatRoomService;
-//     private messageService: MessageService;
-//     private userService: UserService;
-//     private connectedUsers: any = {};
-//     private authenticatedUser: any = {};
-//     private peers: Map<string, string> = new Map();
+export default class SocketHandler {
+    private io: Server;
+    private pubClient: any;
+    private subClient: any;
 
-//     constructor(io: SocketServer) {
-//         this.io = io;
-//         this.chatRoomService = new ChatRoomService();
-//         this.messageService = new MessageService();
-//         this.userService = new UserService();
-//         this.handleConnection();
-//     }
+    constructor(server: http.Server) {
+        this.initializeRedisClients();
+        this.initializeSocketServer(server);
+        socket = this.io;
+        this.initializeMiddleware();
+        this.initializeConnectionHandler();
+    }
 
-//     private handleConnection() {
-//         this.io.on(e.connection, async (socket: Socket) => {
-//             this.authenticatedUser = await this.authenticateUser(socket);
-//             this.attachSocketEvents(socket);
-//             await this.chatRoomService.findChatRooms(this.authenticatedUser).then(chatRooms => {
-//                 socket.emit(e.fetched_chat_rooms, chatRooms);
-//             });
-//             logger.info('client connected');
-//         });
-//     }
+    private initializeRedisClients(): void {
+        try {
+            this.pubClient = createClient({ url: EnvConfig.REDIS_URL || "redis://localhost:6379" });
+            this.pubClient.on("error", (err: any) => logger.error(`Redis Client Error: ${err}`));
 
-//     private attachSocketEvents(socket: Socket) {
+            this.subClient = this.pubClient.duplicate();
 
-//         socket.on(e.join, async (data: { room: number, user: any }) => {
-//             await this.handleJoin(socket, data);
-//             // TODO SUPP this, just for test
-//             await this.chatRoomService.findChatRooms(this.authenticatedUser).then(chatRooms => {
-//                 socket.emit(e.fetched_chat_rooms, chatRooms);
-//             });
-//             await this.handleConnectedUsers(data.room.toString(), data.user);
-//             logger.info('client joined room ' + data.room);
-//         });
+            // Connect to Redis
+            Promise.all([
+                this.pubClient.connect(),
+                this.subClient.connect()
+            ]).then(() => {
+                logger.info("Redis clients connected successfully");
+            }).catch((err: any) => {
+                logger.error(`Redis connection error: ${err}`);
+            });
+        } catch (error) {
+            logger.error(`Error initializing Redis clients: ${error}`);
+        }
+    }
 
-//         socket.on(e.send_message, async (data: { room: number, message: any }) => {
-//             logger.warn('send_message');
-//             await this.handleSendMessage(socket, data);
-//         });
+    private initializeSocketServer(server: http.Server): void {
+        this.io = new Server(server, {
+            cors: {
+                origin: "*",
+                methods: ["GET", "POST"],
+                credentials: true
+            },
+            adapter: createAdapter(this.pubClient, this.subClient)
+        });
+    }
 
-//         socket.on(e.typing_message, async (data: any) => {
-//             logger.warn('typing_message');
-//             await this.handleTypingMessage(socket, data);
-//         });
+    private initializeMiddleware(): void {
+        this.io.use(async (socket: Socket, next) => {
+            try {
+                const token = socket.handshake.headers.token as string || socket.handshake.auth.token;
 
-//         socket.on(e.set_peer_id, async (data: any) => {
-//             logger.warn('save_peer_id');
-//             await this.handleUpdatePeerId(socket, data.peerId, data.user);
-//         });
+                if (!token) {
+                    logger.error("Socket authentication error: No token provided");
+                    return next(new Error("Authentication error: No token provided"));
+                }
 
-//         socket.on(e.send_attachment, async (data: { room: number, attachment: any }) => {
-//             logger.warn('send_attachment');
-//             await this.handleSendAttachment(socket, data);
-//         });
+                const decoded = jwt.verify(token, EnvConfig.JWT_KEY as string) as { id: number };
+                const user = await User.getById(decoded.id);
 
-//         socket.on(e.close_call, (data) => {
-//             const roomId: string = data?.room?.toString();
-//             socket.to(roomId).emit(e.call_ended, { roomId: roomId, partner: data?.partner, hasBeenDeclined: data?.hasBeenDeclined });
-//         });
+                if (!user) {
+                    return next(new Error("Authentication error: User not found"));
+                }
 
-//         socket.on(e.disconnect, () => {
-//             logger.info('client disconnected');
-//         });
-//     }
+                // Attach user to socket
+                (socket as any).user = user;
+                next();
+            } catch (error) {
+                logger.error(`Socket authentication error: ${error}`);
+                next(new Error("Authentication error"));
+            }
+        });
+    }
 
-//     private async authenticateUser(socket: Socket) {
+    private initializeConnectionHandler(): void {
+        this.io.on("connection", (socket: Socket) => {
+            try {
+                const user = (socket as any).user;
+                logger.info(`User connected: ${user.id}`);
 
-//         // const token = await socket.handshake.auth.token;
-//         const currentUser = await socket.handshake.auth.user;
-
-//         try {
-//             // if (token && token.length > 0) {
-//             //     jwt.verify(token, EnvConfig.JWT_KEY, async (error: any, decodedToken: any) => {
-//             //         if (error) {
-//             //             throw error;
-//             //         }
-
-//             //         const tokenId = decodedToken?.id;
-
-//             //         if (!tokenId) {
-//             //             throw new Error("Invalid authorization token");
-//             //         }
-
-//             //         try {
-//             //             const user = await this.userService.findById(tokenId, true, true, true);
-
-//             //             if (!user) {
-//             //                 throw new Error("Invalid authorization token");
-//             //             }
-
-//             //             this.authenticatedUser = user;
-//             //             return user;
-
-//             //         } catch (error) {
-//             //             throw error;
-//             //         }
-//             //     });
-//             // }
-
-//             if (currentUser) {
-//                 const user = await this.userService.findById(currentUser.id, true, true, true);
-//                 if (!user) {
-//                     throw new Error("Invalid authorization token");
-//                 }
-//                 return user;
-//             }
-//         } catch (error) {
-//             logger.error(`Error authenticating user. ${error}`);
-//             socket.disconnect();
-//             return;
-//         }
-
-//     }
-
-//     private async handleJoin(socket: Socket, data: { room: number, user: any }) {
-//         const roomId: string = data?.room?.toString();
-//         if (!roomId) {
-//             logger.error('roomId not found');
-//             return;
-//         }
-//         socket.join(roomId);
-//         const messages = await this.messageService.findByChatRoomId(data.room);
-//         socket.emit(e.fetch_messages, messages);
-//     }
-
-//     private async handleSendMessage(_socket: Socket, data: { room: number, message: any }) {
-//         const roomId: string = data?.room?.toString();
-//         if (roomId) {
-//             try {
-//                 const message = await this.messageService.newMessage({
-//                     content: data.message.content,
-//                     chat_room_id: data.room,
-//                     user_id: data.message.author,
-//                 });
-
-//                 this.io.to(roomId).emit(e.fetched_messages, message);
-
-//                 const receiver = message.chat_room.users.find((user: any) => user.id !== data.message.author);
-//                 const isCurrentlyUserConnected = await this.isCurrentlyUserConnected(roomId, receiver.id);
-//                 if (!isCurrentlyUserConnected) {
-//                     logger.info(`Sending email notification to ${receiver.email}`);
-//                 }
-
-//             } catch (error) {
-//                 logger.error(`Error sending message. ${error}`);
-//             }
-//         }
-//     }
-
-//     private async handleTypingMessage(_socket: Socket, data: any) {
-//         const roomId: string = data?.room?.toString();
-//         if (!roomId) {
-//             logger.error('roomId not found');
-//             return;
-//         }
-//         this.io.to(roomId).emit(e.typing, data);
-//     }
-
-//     private async handleUpdatePeerId(socket: Socket, peerId: string, user: any) {
-//         const userId = user?.id?.toString();
-//         if (!peerId || !userId) {
-//             logger.error('set peerId or userId : peerId or userId not found');
-//             return;
-//         }
-//         this.peers.set(userId, peerId);
-//         await this.userService.updatePeerId(userId, peerId);
-//         return;
-//     }
-
-//     private async handleConnectedUsers(roomId: string, user: any, append: boolean = true) {
-//         if (!this.connectedUsers[roomId]) {
-//             this.connectedUsers[roomId] = new Set();
-//         }
-
-//         if (append) {
-//             this.connectedUsers[roomId].add(user);
-//         } else {
-//             this.connectedUsers[roomId].delete(user);
-//         }
-//     }
-
-//     private async isCurrentlyUserConnected(roomId: string, user: any) {
-//         return this.connectedUsers[roomId]?.has(user);
-//     }
-
-//     private async handleSendAttachment(_socket: Socket, data: { room: number, attachment: any }) {
-//         const roomId: string = data?.room?.toString();
-//         if (roomId) {
-//             try {
-
-//                 const attachment: IMessageAttachment = {
-//                     filename: data.attachment.file.name,
-//                     mimeType: data.attachment.file.type,
-//                     filePath: data.attachment.file.data
-//                 }
-
-//                 const message = await this.messageService.newMessage({
-//                     content: data.attachment.content,
-//                     chat_room_id: data.room,
-//                     user_id: data.attachment.author,
-//                     attachments: [attachment]
-//                 });
-
-//                 this.io.to(roomId).emit(e.fetched_messages, message);
-
-//                 // this.io.to(roomId).emit(e.fetched_attachment, {});
-//             } catch (error) {
-//                 logger.error(`Error sending attachment. ${error}`);
-//             }
-//         }
-//     }
-// }
+                new SocketEventsHandler(socket, user);
+            } catch (error) {
+                logger.error(`Error handling socket connection: ${error}`);
+                socket.disconnect();
+            }
+        });
+    }
+}
