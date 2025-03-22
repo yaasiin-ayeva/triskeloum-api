@@ -19,6 +19,7 @@ export default class CourseService extends BaseService<Course> {
             .leftJoinAndSelect("courses.sections", "sections")
             .leftJoin("courses.category", "category")
             .where("courses.category = :category", { category: categoryId })
+            .andWhere("courses.published = :published", { published: true })
             .getMany();
     }
 
@@ -41,6 +42,7 @@ export default class CourseService extends BaseService<Course> {
         const queryBuilder = this.repo.createQueryBuilder("courses")
             .leftJoinAndSelect("courses.level", "level")
             .where("level.rank <= :targetRank", { targetRank: targetLevel.rank })
+            .andWhere("courses.published = :published", { published: true })
             .orderBy("level.rank", "DESC")
             .addGroupBy("level.id")
             .addGroupBy("courses.id");

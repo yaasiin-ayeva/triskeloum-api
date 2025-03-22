@@ -1,6 +1,7 @@
 import logger from "../config/logger.config";
 import seedCategories from "./category.seeder";
 import seedCourses from "./course.seeder";
+import seedCrm from "./crm.seeder";
 import seedLevels from "./level.seeder";
 import seedQuotes from "./quote.seeder";
 import seedDefaultUser from "./user.seeder";
@@ -12,7 +13,8 @@ export async function runSeeders() {
         seedLevels,
         seedCategories,
         seedCourses,
-        seedQuotes
+        seedQuotes,
+        seedCrm
     ];
 
     for (const seeder of seeders) {

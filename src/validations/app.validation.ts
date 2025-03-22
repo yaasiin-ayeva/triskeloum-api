@@ -38,9 +38,8 @@ export const createEmailSchema = {
     body: Joi.object({
         sender: Joi.string().email().required().label('Sender Email'),
         recipient: Joi.string().email().required().label('Recipient Email'),
-        subject: Joi.string().required().label('Subject'),
-        html: Joi.string().required().label('HTML'),
-        text: Joi.string().required().label('Text'),
+        subject: Joi.string().required().label('Email Subject'),
+        html: Joi.string().required().label('Email Content'),
     })
 };
 

@@ -3,6 +3,7 @@ import { Email } from "../models/Email.model";
 import BaseService from "./Base.service";
 import AppSettingsService from './AppSettings.service';
 import { In } from 'typeorm';
+const { convert } = require('html-to-text');
 
 export default class EmailService extends BaseService<Email> {
 
@@ -42,8 +43,9 @@ export default class EmailService extends BaseService<Email> {
             from: emailConfig.from,
             to: email.recipient,
             subject: email.subject,
-            text: email.text,
-            html: email.html
+            cc: email.sender,
+            html: email.html,
+            text: email.text
         });
 
         if (
@@ -67,6 +69,7 @@ export default class EmailService extends BaseService<Email> {
     }
 
     public async createAndSendEmail(emailData: Partial<Email>): Promise<Email> {
+        emailData.text = convert(emailData.html, { wordwrap: 130 });
         const email = await this.create(emailData);
         return this.sendEmail(email.id);
     }

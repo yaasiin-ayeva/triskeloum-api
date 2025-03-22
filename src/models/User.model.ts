@@ -3,7 +3,10 @@ import BaseModel from "./Base.model";
 import { BeforeInsert, Column, Entity, Index, ManyToOne, OneToMany } from "typeorm";
 import { ROLE } from '../types/enums';
 import { Level } from './Level.model';
-import { Token } from './Token.model';
+import { Session } from './Session.model';
+import { Message } from './crm/Message.model';
+import { Call } from './crm/Call.model';
+import { AppDataSource } from '../config/database.config';
 
 @Entity("users")
 export class User extends BaseModel {
@@ -41,8 +44,8 @@ export class User extends BaseModel {
     })
     password: string;
 
-    @OneToMany(() => Token, (token) => token.user)
-    tokens: Token[];
+    @OneToMany(() => Session, (session) => session.user)
+    tokens: Session[];
 
     @Column({
         type: "timestamp",
@@ -59,6 +62,12 @@ export class User extends BaseModel {
 
     @ManyToOne(() => Level, (level) => level.users)
     level: Level
+
+    @OneToMany(() => Message, (message) => message.user)
+    messages: Message[]
+
+    @OneToMany(() => Call, (call) => call.user)
+    calls: Call[]
 
     @Index()
     @Column({
@@ -97,8 +106,26 @@ export class User extends BaseModel {
         return allowedListData;
     }
 
+    static getDatasource() {
+        if (!AppDataSource.isInitialized) {
+            AppDataSource.initialize();
+        }
+        if (AppDataSource.isInitialized) {
+            return AppDataSource.getRepository(User);
+        }
+        return AppDataSource.getRepository(User);
+    }
+
     constructor(user: Partial<User>) {
         super();
         Object.assign(this, user);
+    }
+
+    static async getByIds(ids: number[]) {
+        return await User.getDatasource().findByIds(ids);
+    }
+
+    static async getById(id: number) {
+        return await User.getDatasource().findOneBy({ id });
     }
 }
