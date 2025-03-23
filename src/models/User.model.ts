@@ -122,7 +122,8 @@ export class User extends BaseModel {
     }
 
     static async getByIds(ids: number[]) {
-        return await User.getDatasource().findByIds(ids);
+        const users = await User.getDatasource().findByIds(ids);
+        return users.map(user => user.getInfo());
     }
 
     static async getById(id: number) {
