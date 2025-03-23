@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Response } from "express";
 import { Room } from "../models/crm/Room.model";
 import { Message } from "../models/crm/Message.model";
 import { Call } from "../models/crm/Call.model";
@@ -7,8 +7,7 @@ import { User } from "../models/User.model";
 import { BaseController } from "./Base.controller";
 import RoomService from "../services/Room.service";
 import { socket } from "../sockets/socket-handler.sockets";
-
-// src/controllers/Room.controller.ts
+import path from "path";
 
 export default class CRMController extends BaseController<RoomService> {
 
@@ -16,7 +15,7 @@ export default class CRMController extends BaseController<RoomService> {
         super(new RoomService(), 'room');
     }
 
-    public createRoom = async (req, res, next) => {
+    public createRoom = async (req: any, res: Response, next: NextFunction): Promise<Response> => {
         try {
 
             const { users } = req.body;
@@ -44,6 +43,8 @@ export default class CRMController extends BaseController<RoomService> {
 
             userEntities.forEach(user => {
                 socket.to(`user_${user.id}`).emit("room:created", room);
+                // make user join the rooms
+                // socket.to(`room_${room.id}`).emit("room:user_joined", { userId: user.id, roomId: room.id });
             });
 
             return this.apiResponse(res, 201, "Room created", room);
@@ -53,10 +54,14 @@ export default class CRMController extends BaseController<RoomService> {
         }
     }
 
-    public async getRoom(req: any, res: Response): Promise<Response> {
+    public getRoom = async (req: any, res: Response, next: NextFunction): Promise<Response> => {
         try {
             const { id } = req.params;
             const currentUser = req.user;
+
+            if (!id || isNaN(parseInt(id))) {
+                return this.apiResponse(res, 400, "Room id is required");
+            }
 
             const room = await Room.getOneByIdWithRelations(parseInt(id), ["users", "messages", "messages.user", "messages.attachments", "calls"]);
 
@@ -71,29 +76,44 @@ export default class CRMController extends BaseController<RoomService> {
 
             return this.apiResponse(res, 200, "Room found", room);
         } catch (error) {
-            return this.apiResponse(res, 500, error);
+            next(error);
         }
     }
 
-    public async getUserRooms(req: any, res: Response): Promise<Response> {
+    public getUserRooms = async (req: any, res: Response, next: NextFunction): Promise<Response> => {
         try {
             const currentUser = req.user;
+            const { type } = req.query;
 
-            const rooms = await Room.getDatasource().createQueryBuilder("room")
+            let query = Room.getDatasource().createQueryBuilder("room")
                 .innerJoinAndSelect("room.users", "user")
                 .leftJoinAndSelect("room.messages", "messages")
                 .leftJoinAndSelect("messages.user", "message_user")
-                .where("user.id = :userId", { userId: currentUser.id })
+                .where("user.id = :userId", { userId: currentUser.id });
+
+            if (type === 'direct') {
+                query = query.andWhere("room.isDirect = true");
+            } else if (type === 'group') {
+                query = query.andWhere("room.isDirect = false");
+            }
+
+            const rooms = await query
                 .orderBy("messages.created_at", "DESC")
                 .getMany();
 
+            rooms.forEach(room => {
+                room.users.forEach(user => {
+                    delete user.password;
+                });
+            });
+
             return this.apiResponse(res, 200, "Rooms found", rooms);
         } catch (error) {
-            return this.apiResponse(res, 500, error);
+            next(error);
         }
     }
 
-    public async addUsersToRoom(req: any, res: Response): Promise<Response> {
+    public addUsersToRoom = async (req: any, res: Response, next: NextFunction): Promise<Response> => {
         try {
             const { id } = req.params;
             const { users } = req.body;
@@ -131,16 +151,17 @@ export default class CRMController extends BaseController<RoomService> {
             await room.save();
 
             room.users.forEach(user => {
+                delete user.password;
                 socket.to(`user_${user.id}`).emit("room:updated", room);
             });
 
             return this.apiResponse(res, 200, "Room updated", room);
         } catch (error) {
-            return this.apiResponse(res, 500, error);
+            next(error);
         }
     }
 
-    public async removeUserFromRoom(req: any, res: Response): Promise<Response> {
+    public removeUserFromRoom = async (req: any, res: Response, next: NextFunction): Promise<Response> => {
         try {
             const { roomId, userId } = req.params;
             const currentUser = req.user;
@@ -169,6 +190,7 @@ export default class CRMController extends BaseController<RoomService> {
             await room.save();
 
             room.users.forEach(user => {
+                delete user.password;
                 socket.to(`user_${user.id}`).emit("room:updated", room);
             });
 
@@ -176,17 +198,33 @@ export default class CRMController extends BaseController<RoomService> {
 
             return this.apiResponse(res, 200, "Room updated", room);
         } catch (error) {
-            return this.apiResponse(res, 500, error);
+            next(error);
         }
     }
 
     // ===== MESSAGES =====
-    public async sendMessage(req: any, res: Response): Promise<Response> {
+    public sendMessage = async (req: any, res: Response, next: NextFunction): Promise<Response> => {
         try {
             const { roomId } = req.params;
             const { content, repliedToId } = req.body;
             const currentUser = req.user;
             const attachments = req.files as Express.Multer.File[];
+
+            if (!roomId || isNaN(parseInt(roomId))) {
+                return this.apiResponse(res, 400, "Room id is required");
+            }
+
+            if (!content || typeof content !== "string") {
+                return this.apiResponse(res, 400, "Message content is required");
+            }
+
+            if (repliedToId && isNaN(parseInt(repliedToId))) {
+                return this.apiResponse(res, 400, "Replied to id is required");
+            }
+
+            if (content.trim().length === 0 && attachments.length === 0) {
+                return this.apiResponse(res, 400, "Message content cannot be empty");
+            }
 
             const room = await Room.getDatasource().findOne({
                 where: { id: parseInt(roomId) },
@@ -214,6 +252,8 @@ export default class CRMController extends BaseController<RoomService> {
                 }
             }
 
+            delete room.messages;
+
             const message = new Message({
                 content: content || "",
                 user: currentUser,
@@ -227,7 +267,7 @@ export default class CRMController extends BaseController<RoomService> {
                 for (const file of attachments) {
                     const attachment = new Attachment({
                         filename: file.originalname,
-                        path: file.path,
+                        path: path.posix.join(...file.path.split(path.sep)),
                         mimetype: file.mimetype,
                         message
                     });
@@ -237,25 +277,46 @@ export default class CRMController extends BaseController<RoomService> {
                 await message.save();
             }
 
+            const messageData = {
+                id: message.id,
+                content: message.content,
+                user: {
+                    id: message.user.id,
+                    firstname: message.user.firstname,
+                    lastname: message.user.lastname,
+                    email: message.user.email,
+                    role: message.user.role,
+                    picture: message.user.picture
+                },
+                roomId: message.room.id,
+                attachments: message.attachments?.map(a => ({
+                    filename: a.filename,
+                    path: a.path,
+                    mimetype: a.mimetype
+                }))
+            };
+
             room.users.forEach(user => {
+                delete user.password;
                 if (user.id !== currentUser.id) {
-                    socket.to(`user_${user.id}`).emit("message:received", {
-                        message,
-                        roomId: room.id
-                    });
+                    socket.to(`user_${user.id}`).emit("message:received", messageData);
                 }
             });
 
-            return this.apiResponse(res, 200, "Message sent", message);
+            return this.apiResponse(res, 200, "Message sent", messageData);
         } catch (error) {
-            return this.apiResponse(res, 500, error);
+            next(error);
         }
     }
 
-    public async markMessageAsDelivered(req: any, res: Response): Promise<Response> {
+    public markMessageAsDelivered = async (req: any, res: Response, next: NextFunction): Promise<Response> => {
         try {
             const { id } = req.params;
             const currentUser = req.user;
+
+            if (!id || isNaN(parseInt(id))) {
+                return this.apiResponse(res, 400, "Message id is required");
+            }
 
             const message = await Message.getDatasource().findOne({
                 where: { id: parseInt(id) },
@@ -271,27 +332,35 @@ export default class CRMController extends BaseController<RoomService> {
                 return this.apiResponse(res, 403, "Access denied");
             }
 
+            delete message.room.users;
+            delete message.room.messages;
+            delete message.room.calls;
+
             message.deliveredAt = new Date();
             await message.save();
 
-            socket.to(`user_${message.user.id}`).emit("message:delivered", {
+            socket.to(`user_${currentUser.id}`).emit("message:delivered", {
                 messageId: message.id,
                 deliveredAt: message.deliveredAt
             });
 
             return this.apiResponse(res, 200, "Message marked as delivered", message);
         } catch (error) {
-            return this.apiResponse(res, 500, error);
+            next(error);
         }
     }
 
     /**
      * Mark message as seen
      */
-    public async markMessageAsSeen(req: any, res: Response): Promise<Response> {
+    public markMessageAsSeen = async (req: any, res: Response, next: NextFunction): Promise<Response> => {
         try {
             const { id } = req.params;
             const currentUser = req.user;
+
+            if (!id || isNaN(parseInt(id))) {
+                return this.apiResponse(res, 400, "Message id is required");
+            }
 
             const message = await Message.getDatasource().findOne({
                 where: { id: parseInt(id) },
@@ -307,30 +376,42 @@ export default class CRMController extends BaseController<RoomService> {
                 return this.apiResponse(res, 403, "Access denied");
             }
 
+            delete message.room.users;
+            delete message.room.messages;
+            delete message.room.calls;
+
             message.seenAt = new Date();
             await message.save();
 
-            socket.to(`user_${message.user.id}`).emit("message:seen", {
+            socket.to(`user_${currentUser.id}`).emit("message:seen", {
                 messageId: message.id,
                 seenAt: message.seenAt
             });
 
             return this.apiResponse(res, 200, "Message marked as seen", message);
         } catch (error) {
-            return this.apiResponse(res, 500, error);
+            next(error);
         }
     }
 
     /**
      * Edit message
      */
-    public async editMessage(req: any, res: Response): Promise<Response> {
+    public editMessage = async (req: any, res: Response, next: NextFunction): Promise<Response> => {
         try {
             const { id } = req.params;
             const { content } = req.body;
             const currentUser = req.user;
 
+            if (!id || isNaN(parseInt(id))) {
+                return this.apiResponse(res, 400, "Message id is required");
+            }
+
             if (!content) {
+                return this.apiResponse(res, 400, "Content is required");
+            }
+
+            if (content.trim() === "") {
                 return this.apiResponse(res, 400, "Content is required");
             }
 
@@ -361,20 +442,28 @@ export default class CRMController extends BaseController<RoomService> {
                 }
             });
 
+            delete message.room.users;
+            delete message.room.messages;
+            delete message.room.calls;
+            delete message.user.password;
+
             return this.apiResponse(res, 200, "Message edited", message);
         } catch (error) {
-            return this.apiResponse(res, 500, error);
-
+            next(error);
         }
     }
 
     /**
      * Delete message
      */
-    public async deleteMessage(req: any, res: Response): Promise<Response> {
+    public deleteMessage = async (req: any, res: Response, next: NextFunction): Promise<Response> => {
         try {
             const { id } = req.params;
             const currentUser = req.user;
+
+            if (!id || isNaN(parseInt(id))) {
+                return this.apiResponse(res, 400, "Message id is required");
+            }
 
             const message = await Message.getDatasource().findOne({
                 where: { id: parseInt(id) },
@@ -403,7 +492,7 @@ export default class CRMController extends BaseController<RoomService> {
 
             roomUsers.forEach(user => {
                 if (user.id !== currentUser.id) {
-                    socket.to(`user_${user.id}`).emit("message:deleted", {
+                    socket.to(`user_${currentUser.id}`).emit("message:deleted", {
                         messageId,
                         roomId
                     });
@@ -412,19 +501,22 @@ export default class CRMController extends BaseController<RoomService> {
 
             return this.apiResponse(res, 200, "Message deleted");
         } catch (error) {
-            return this.apiResponse(res, 500, error);
-
+            next(error);
         }
     }
 
     /**
      * Get messages for a room
      */
-    public async getRoomMessages(req: any, res: Response): Promise<Response> {
+    public getRoomMessages = async (req: any, res: Response, next: NextFunction): Promise<Response> => {
         try {
             const { roomId } = req.params;
             const { limit = 50, offset = 0 } = req.query;
             const currentUser = req.user;
+
+            if (!roomId || isNaN(parseInt(roomId))) {
+                return this.apiResponse(res, 400, "Room id is required");
+            }
 
             const room = await Room.getDatasource().findOne({
                 where: { id: parseInt(roomId) },
@@ -451,10 +543,16 @@ export default class CRMController extends BaseController<RoomService> {
                 .skip(parseInt(offset as string))
                 .getMany();
 
+            messages.forEach(message => {
+                delete message.user.password;
+                if (message.repliedTo && message.repliedTo.user) {
+                    delete message.repliedTo.user.password;
+                }
+            });
+
             return this.apiResponse(res, 200, "Messages found", messages);
         } catch (error) {
-            return this.apiResponse(res, 500, error);
-
+            next(error);
         }
     }
 
@@ -583,6 +681,64 @@ export default class CRMController extends BaseController<RoomService> {
             return this.apiResponse(res, 200, "Calls found", calls);
         } catch (error) {
             return this.apiResponse(res, 500, error);
+        }
+    }
+
+    public getOrCreateDirectRoom = async (req: any, res: Response, next: NextFunction): Promise<Response> => {
+        try {
+            const { targetUserId } = req.params;
+            const currentUser = req.user;
+
+            if (!targetUserId) {
+                return this.apiResponse(res, 400, "Target user ID is required");
+            }
+
+            const targetUser = await User.getById(parseInt(targetUserId));
+            if (!targetUser) {
+                return this.apiResponse(res, 404, "Target user not found");
+            }
+
+            const existingRoom = await Room.getDatasource()
+                .createQueryBuilder("room")
+                .innerJoinAndSelect("room.users", "users")
+                .where("room.isDirect = :isDirect", { isDirect: true })
+                .andWhere(qb => {
+                    const subQuery = qb.subQuery()
+                        .select("ru.room_id")
+                        .from("room_users", "ru")
+                        .where("ru.user_id IN (:...userIds)", { userIds: [currentUser.id, targetUser.id] })
+                        .groupBy("ru.room_id")
+                        .having("COUNT(DISTINCT ru.user_id) = 2")
+                        .getQuery();
+                    return "room.id IN " + subQuery;
+                })
+                .getOne();
+
+            if (existingRoom) {
+                existingRoom.users.forEach(user => {
+                    delete user.password;
+                });
+                return this.apiResponse(res, 200, "Direct room found", existingRoom);
+            }
+
+            const newRoom = new Room({
+                users: [currentUser, targetUser],
+                isDirect: true,
+                isDraft: false
+            });
+
+            await newRoom.save();
+            newRoom.users.forEach(user => {
+                delete user.password;
+            });
+
+            [currentUser.id, targetUser.id].forEach(userId => {
+                socket.to(`user_${userId}`).emit("room:created", newRoom);
+            });
+
+            return this.apiResponse(res, 201, "Direct room created", newRoom);
+        } catch (error) {
+            next(error);
         }
     }
 }

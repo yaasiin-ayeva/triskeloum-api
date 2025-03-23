@@ -58,17 +58,20 @@ const seedCrm = async () => {
             {
                 name: 'Room 1',
                 users: [users[0], users[1]],
-                isDraft: false
+                isDraft: false,
+                isDirect: true
             },
             {
                 name: 'Room 2',
                 users: [users[0], users[2]],
-                isDraft: false
+                isDraft: false,
+                isDirect: true
             },
             {
                 name: 'Room 3',
                 users: [users[1], users[2]],
-                isDraft: false
+                isDraft: false,
+                isDirect: true
             }
         ];
 

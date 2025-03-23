@@ -16,8 +16,12 @@ export class Room extends BaseModel {
     })
     name: string
 
+    @Column({ default: false })
+    isDirect: boolean;
+
     @ManyToMany(() => User, {
-        onDelete: "CASCADE"
+        onDelete: "CASCADE",
+        eager: true
     })
     @JoinTable({
         name: "room_users",
@@ -67,9 +71,24 @@ export class Room extends BaseModel {
     }
 
     static async getOneByIdWithRelations(id: number, arg1: string[]) {
-        return await Room.getDatasource().findOne({
+        const room = await Room.getDatasource().findOne({
             where: { id: id },
             relations: arg1
+        });
+
+        if (room) {
+            room.users.forEach(user => {
+                delete user.password;
+            });
+        }
+
+        return room;
+    }
+
+    static async getExistingRoom(userId1: number, userId2: number) {
+        return await Room.getDatasource().findOne({
+            where: { users: [{ id: userId1 }, { id: userId2 }] },
+            relations: ["users"]
         });
     }
 }
