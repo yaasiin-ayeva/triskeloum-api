@@ -97,7 +97,26 @@ export default class CRMController extends BaseController<RoomService> {
                 query = query.andWhere("room.isDirect = false");
             }
 
-            const rooms = await query
+            const rooms = await Room.getDatasource().createQueryBuilder("room")
+                .leftJoinAndSelect("room.users", "users")
+                .leftJoinAndSelect("room.messages", "messages")
+                .leftJoinAndSelect("messages.user", "message_user")
+                .where(qb => {
+                    const subQuery = qb.subQuery()
+                        .select("subRoom.id")
+                        .from(Room, "subRoom")
+                        .innerJoin("subRoom.users", "subUser")
+                        .where("subUser.id = :userId", { userId: currentUser.id });
+
+                    if (type === 'direct') {
+                        subQuery.andWhere("subRoom.isDirect = true");
+                    } else if (type === 'group') {
+                        subQuery.andWhere("subRoom.isDirect = false");
+                    }
+
+                    return "room.id IN " + subQuery.getQuery();
+                })
+                .setParameter("userId", currentUser.id)
                 .orderBy("messages.created_at", "DESC")
                 .getMany();
 
